@@ -22,7 +22,7 @@ def check(root: Path) -> list[str]:
         path = root / name
         if not path.is_file() or not path.read_text(encoding="utf-8").strip():
             failures.append(f"Missing or empty: {name}")
-    for name in ("implementer", "explainer", "reviewer"):
+    for name in ("implementer", "explainer", "verifier"):
         path = root / ".codex" / "agents" / f"{name}.toml"
         try:
             data = tomllib.loads(path.read_text(encoding="utf-8"))

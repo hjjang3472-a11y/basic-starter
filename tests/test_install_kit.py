@@ -32,6 +32,8 @@ class InstallSafetyTests(unittest.TestCase):
             self.assertTrue((target / "AGENTS.practice.md").is_file())
             self.assertTrue((target / ".codex/agents/implementer.toml").is_file())
             self.assertTrue((target / ".codex/agents/explainer.toml").is_file())
+            self.assertTrue((target / ".codex/agents/verifier.toml").is_file())
+            self.assertFalse((target / ".codex/agents/reviewer.toml").exists())
             self.assertNotIn("tools/check_kit.py", (target / "RUN.md").read_text(encoding="utf-8"))
 
     def test_repeated_install_does_not_overwrite_user_edits(self):
