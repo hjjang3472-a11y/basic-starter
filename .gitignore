@@ -13,6 +13,7 @@ node_modules/
 *.sqlite*
 outputs/*
 !outputs/.gitkeep
+!outputs/README.md
 data/*
 .DS_Store
 Thumbs.db
