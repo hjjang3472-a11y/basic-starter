@@ -16,7 +16,7 @@ def check(root: Path) -> list[str]:
         "README.md", "AGENTS.md", "RUN.md", "docs/SPEC.md", "docs/PLAN.md",
         "docs/VERIFY.md", "docs/EXPLAIN.md",
         "prompts/START_CYCLE.md", "prompts/ROLE_FALLBACK.md",
-        "references/TOOLS.md", "tools/install_kit.py", "templates/RUN.md",
+        "references/TOOLS.md", "tools/install_kit.py",
     )
     for name in required:
         path = root / name

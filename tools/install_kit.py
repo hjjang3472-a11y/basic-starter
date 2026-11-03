@@ -44,7 +44,7 @@ def install(target: Path, apply: bool = False, source: Path = KIT_ROOT) -> list[
     plan: list[tuple[Path, Path, dict[str, str]]] = []
     # Validate every destination before creating anything.
     for relative in PAYLOAD:
-        source_file = source / ("templates/RUN.md" if relative == "RUN.md" else relative)
+        source_file = source / relative
         if not source_file.is_file():
             raise ValueError(f"Missing kit file: {relative}")
         output_name = relative
