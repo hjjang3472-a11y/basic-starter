@@ -11,7 +11,7 @@ PAYLOAD = (
     "AGENTS.md", "RUN.md",
     "docs/SPEC.md", "docs/PLAN.md", "docs/VERIFY.md", "docs/EXPLAIN.md",
     ".codex/agents/implementer.toml", ".codex/agents/explainer.toml", ".codex/agents/verifier.toml",
-    "prompts/START_CYCLE.md", "prompts/ROLE_FALLBACK.md", "practice/CYCLE_TRIAL.md",
+    "prompts/START_CYCLE.md", "prompts/ROLE_FALLBACK.md",
     "references/TOOLS.md",
 )
 
