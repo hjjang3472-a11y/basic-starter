@@ -75,6 +75,6 @@ verifier는 주요 기능 구현 후 SPEC의 완료 기준과 실제 동작을 �
 
 프로젝트에서 허용한 도구·데이터·공개 범위를 따릅니다. 개인정보·비밀키·비공개 코드와 공개 권한이 없는 원본 데이터는 저장소에 올리지 않습니다. 합성 예제 데이터와 실제 프로젝트 데이터를 구분합니다.
 
-이 저장소의 기본 코드·문서는 새로 작성한 범용 준비 자료입니다. 출처와 변경 이력은 `references/SOURCES.md`와 Git 이력으로 관리합니다.
+이 저장소의 기본 코드·문서는 새로 작성한 범용 준비 자료입니다. 변경 이력은 Git으로 관리합니다.
 
 공식 기능 참고: [Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [커스터마이징](https://learn.chatgpt.com/docs/customization/overview).
