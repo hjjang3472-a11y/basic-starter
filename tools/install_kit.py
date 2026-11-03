@@ -9,7 +9,7 @@ from pathlib import Path
 KIT_ROOT = Path(__file__).resolve().parents[1]
 PAYLOAD = (
     "AGENTS.md", "RUN.md",
-    "docs/SPEC.md", "docs/PLAN.md", "docs/VERIFY.md", "docs/EXPLAIN.md", "docs/FEEDBACK.md",
+    "docs/SPEC.md", "docs/PLAN.md", "docs/VERIFY.md", "docs/EXPLAIN.md",
     ".codex/agents/explainer.toml", ".codex/agents/reviewer.toml",
     "prompts/START_CYCLE.md", "prompts/ROLE_FALLBACK.md", "practice/CYCLE_TRIAL.md",
     "references/TOOLS.md", "references/SOURCES.md",

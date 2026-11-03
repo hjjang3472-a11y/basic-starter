@@ -14,7 +14,7 @@ def check(root: Path) -> list[str]:
     failures: list[str] = []
     required = (
         "README.md", "AGENTS.md", "RUN.md", "docs/SPEC.md", "docs/PLAN.md",
-        "docs/VERIFY.md", "docs/EXPLAIN.md", "docs/FEEDBACK.md",
+        "docs/VERIFY.md", "docs/EXPLAIN.md",
         "prompts/START_CYCLE.md", "prompts/ROLE_FALLBACK.md", "practice/CYCLE_TRIAL.md",
         "references/TOOLS.md", "references/SOURCES.md", "tools/install_kit.py", "templates/RUN.md",
     )
