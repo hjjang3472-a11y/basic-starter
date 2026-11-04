@@ -1,5 +1,6 @@
 """Meaningful regression checks: task source files must survive kit installation."""
 import importlib.util
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,9 +9,123 @@ ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("install_kit", ROOT / "tools" / "install_kit.py")
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
+check_spec = importlib.util.spec_from_file_location("check_kit", ROOT / "tools" / "check_kit.py")
+checker = importlib.util.module_from_spec(check_spec)
+check_spec.loader.exec_module(checker)
+
+SKILL_NAMES = (
+    "starter-clarify-requirements", "starter-plan-tasks", "starter-test-behavior",
+    "starter-debug", "starter-review", "starter-verify-completion", "starter-record-decisions",
+)
+SKILL_PATHS = tuple(f".agents/skills/{name}/SKILL.md" for name in SKILL_NAMES)
+GUIDE_PATHS = (
+    ".agents/skills/THIRD_PARTY_NOTICES.md", "references/SKILLS.md", "references/TIME_MANAGEMENT.md",
+)
+
+
+def fixture_source(directory: str) -> Path:
+    """Build an independent valid source, even before real skill files are authored."""
+    source = Path(directory) / "source"
+    source.mkdir()
+    base_files = (*module.PAYLOAD, "README.md", "src/README.md", "outputs/README.md", "tools/install_kit.py")
+    for relative in base_files:
+        original = ROOT / relative
+        if original.is_file():
+            target = source / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(original, target)
+    for name, relative in zip(SKILL_NAMES, SKILL_PATHS):
+        target = source / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(
+            f'---\nname: {name}\ndescription: "Use when a synthetic test task needs this workflow."\n---\n'
+            '# Synthetic workflow\n\nRead the task, act within scope, and report observed evidence.\n',
+            encoding="utf-8",
+        )
+    for relative in GUIDE_PATHS:
+        target = source / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("# Synthetic preparation guide\n\nOriginal test fixture content.\n", encoding="utf-8")
+    return source
 
 
 class InstallSafetyTests(unittest.TestCase):
+    def test_install_delivers_seven_skills_and_shared_guides(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = fixture_source(directory)
+            target = Path(directory) / "task"
+            target.mkdir()
+            (target / "README.md").write_text("original task", encoding="utf-8")
+            module.install(target, apply=True, source=source)
+            for relative in (*SKILL_PATHS, *GUIDE_PATHS):
+                with self.subTest(path=relative):
+                    self.assertTrue((target / relative).is_file(), f"Not installed: {relative}")
+                    self.assertEqual((target / relative).read_bytes(), (source / relative).read_bytes())
+            self.assertEqual((target / "README.md").read_text(encoding="utf-8"), "original task")
+
+    def test_install_preserves_existing_user_and_colliding_skills(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = fixture_source(directory)
+            target = Path(directory) / "task"
+            target.mkdir()
+            originals = {
+                SKILL_PATHS[0]: "my edited starter skill",
+                ".agents/skills/user-only/SKILL.md": "my unrelated private workflow",
+                "data/source.csv": "original,data\n1,2\n",
+            }
+            for relative, content in originals.items():
+                path = target / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(content, encoding="utf-8")
+            rows = module.install(target, apply=True, source=source)
+            for relative, content in originals.items():
+                self.assertEqual((target / relative).read_text(encoding="utf-8"), content)
+            self.assertTrue((target / SKILL_PATHS[1]).is_file())
+            self.assertEqual(next(row["status"] for row in rows if row["path"] == SKILL_PATHS[0]), "EXISTS")
+
+    def test_checker_rejects_invalid_skill_metadata_and_unfinished_body(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = fixture_source(directory)
+            self.assertEqual(checker.check(source), [])
+            name, relative = SKILL_NAMES[0], SKILL_PATHS[0]
+            path = source / relative
+            cases = {
+                "missing name": '---\ndescription: "Valid description"\n---\nRead the task.\n',
+                "wrong name": '---\nname: unrelated-skill\ndescription: "Valid description"\n---\nRead the task.\n',
+                "missing description": f'---\nname: {name}\n---\nRead the task.\n',
+                "blank description": f'---\nname: {name}\ndescription: "  "\n---\nRead the task.\n',
+                "unfinished description": f'---\nname: {name}\ndescription: "TBD"\n---\nRead the task.\n',
+                "missing frontmatter": f'# {name}\n\nRead the task.\n',
+                "empty body": f'---\nname: {name}\ndescription: "Valid description"\n---\n',
+                "duplicate metadata": f'---\nname: {name}\nname: {name}\ndescription: "Valid description"\n---\nRead the task.\n',
+            }
+            for label, content in cases.items():
+                with self.subTest(case=label):
+                    path.write_text(content, encoding="utf-8")
+                    errors = checker.check(source)
+                    self.assertTrue(any(relative in error for error in errors), errors)
+
+    def test_checker_reports_missing_skill(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = fixture_source(directory)
+            relative = SKILL_PATHS[-1]
+            path = source / relative
+            path.unlink()
+            errors = checker.check(source)
+            self.assertTrue(any(relative in error for error in errors), errors)
+
+    def test_checker_reports_invalid_utf8(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = fixture_source(directory)
+            relative = SKILL_PATHS[-1]
+            path = source / relative
+            path.write_bytes(b"\xff\xfe\xff")
+            try:
+                errors = checker.check(source)
+            except UnicodeError as error:
+                self.fail(f"Invalid UTF-8 must be reported as a validation failure, not raised: {error}")
+            self.assertTrue(any(relative in error for error in errors), errors)
+
     def test_preview_writes_nothing(self):
         with tempfile.TemporaryDirectory() as directory:
             target = Path(directory)

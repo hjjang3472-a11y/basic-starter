@@ -7,12 +7,18 @@ import stat
 from pathlib import Path
 
 KIT_ROOT = Path(__file__).resolve().parents[1]
+SKILL_NAMES = (
+    "starter-clarify-requirements", "starter-plan-tasks", "starter-test-behavior",
+    "starter-debug", "starter-review", "starter-verify-completion", "starter-record-decisions",
+)
 PAYLOAD = (
     "AGENTS.md", "RUN.md",
     "docs/SPEC.md", "docs/PLAN.md", "docs/VERIFY.md", "docs/EXPLAIN.md",
     ".codex/agents/implementer.toml", ".codex/agents/explainer.toml", ".codex/agents/verifier.toml",
     "prompts/START_CYCLE.md", "prompts/ROLE_FALLBACK.md",
-    "references/TOOLS.md",
+    "references/TOOLS.md", "references/SKILLS.md", "references/TIME_MANAGEMENT.md",
+    ".agents/skills/THIRD_PARTY_NOTICES.md",
+    *(f".agents/skills/{name}/SKILL.md" for name in SKILL_NAMES),
 )
 
 
